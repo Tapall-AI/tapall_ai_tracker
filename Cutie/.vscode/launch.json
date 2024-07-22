@@ -1,0 +1,147 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "eval",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "cutie/eval_vos.py",
+            "args": [
+                "weights=/nvme-ssd/gaomingqi/output/svos/convnextv2_nano_ft_2/convnextv2_nano_ft_2_main_training_last.pth",
+                "model=large",
+                "dataset=mose-val",
+                "max_mem_frames=10",
+                "mem_every=3",
+                "datasets.mose-val.size=720",
+                "datasets.mose-val.mem_every=3",
+                "exp_id=newoomoseplusdebugx",
+            ],
+// python cutie/eval_vos.py dataset=mose weights=/nvme-ssd/gaomingqi/output/svos/default/default_main_training_last.pth model=base dataset=mose-val max_mem_frames=10 mem_every=3 datasets.mose-val.size=752 datasets.mose-val.mem_every=3 exp_id=mose752
+
+//python cutie/eval_vos.py dataset=mose weights=/ssd1/yk/Cutie/ckpt/r101_resume_large_4_512_main_training_last.pth \
+// model=large dataset=mose-val max_mem_frames=10 mem_every=3 datasets.mose-val.size=752 datasets.mose-val.mem_every=3 exp_id=mose_large_flip_multiscale
+    "env": {
+                "CUDA_VISIBLE_DEVICES": "8",
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+// python scripts/convert_burst_to_vos_train.py --json_path ../BURST/train/train.json --frames_path ../BURST/frames/train --output_path ../BURST/train-vos
+        {
+            "name": "resume",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/nvme-ssd/gaomingqi/anaconda3/envs/cutie/bin/torchrun",
+            "args": [
+                "--master_port",
+                "25352",
+                "--nproc_per_node",
+                "1",
+                "cutie/train.py",
+                "exp_id=xaxxx",
+                "main_training.batch_size=1",
+                "model=large",
+                "data=with-mose",
+                "weights=/nvme-ssd/gaomingqi/output/svos/convnextv2_nano_ft_3/convnextv2_nano_ft_3_main_training_ckpt_last.pth",
+                // "checkpoint=/nvme-ssd/gaomingqi/output/svos/default/default_main_training_ckpt_last.pth",
+                "pre_training.enabled=False",
+        // CUDA_VISIBLE_DEVICES=1,2,3,4 OMP_NUM_THREADS=4 torchrun --master_port 25351 --nproc_per_node 4 cutie/train.py exp_id=convnextv2_ft num_workers=1 main_training.batch_size=1 model=large data=with-mose weights=/nvme-ssd/gaomingqi/output/svos/convnextv2/convnextv2_pre_training_last.pth pre_training.enabled=False
+            ],
+            "env": {
+                "OMP_NUM_THREADS": "1",
+                "CUDA_VISIBLE_DEVICES": "1",
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+
+        {
+            "name": "fine-tune",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/nvme-ssd/gaomingqi/anaconda3/envs/cutie/bin/torchrun",
+            "args": [
+                "--master_port",
+                "25352",
+                "--nproc_per_node",
+                "1",
+                "cutie/train.py",
+                "exp_id=debug",
+                // "model=large",
+                // "num_workers=1",
+                "main_training.batch_size=1",
+                "model=base",
+                "data=with-mose",
+                // "weights=/nvme-ssd/gaomingqi/output/svos/convnextv2/convnextv2_pre_training_last.pth",
+                "weights=/nvme-ssd/gaomingqi/output/svos/convnextv2_base/convnextv2_base_pre_training_last.pth",
+                "pre_training.enabled=False",
+// CUDA_VISIBLE_DEVICES=1,2,3,4 OMP_NUM_THREADS=4 torchrun --master_port 25351 --nproc_per_node 4 cutie/train.py exp_id=convnextv2_ft num_workers=1 main_training.batch_size=1 model=large data=with-mose weights=/nvme-ssd/gaomingqi/output/svos/convnextv2/convnextv2_pre_training_last.pth pre_training.enabled=False
+            ],
+            "env": {
+                "OMP_NUM_THREADS": "1",
+                "HYDRA_FULL_ERROR": "1",
+                "CUDA_VISIBLE_DEVICES": "4",
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "train",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/nvme-ssd/gaomingqi/anaconda3/envs/cutie/bin/torchrun",
+            "args": [
+                "--master_port",
+                "25350",
+                "--nproc_per_node",
+                "1",
+                "cutie/train.py",
+                "exp_id=debug",
+                "model=large",
+                "data=with-mose",
+                "pre_training.batch_size=1",
+            ],
+            "env": {
+                "OMP_NUM_THREADS": "1",
+                "HYDRA_FULL_ERROR": "1",
+                "CUDA_VISIBLE_DEVICES": "4",
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "track",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "tracker/base_tracker.py",
+            // "args": [
+            //     "dataset=mose",
+            //     "weights=/nvme-ssd/gaomingqi/output/svos/pretrained/cutie-base-wmose.pth",
+            //     "model=base",
+            //     "dataset=mose-val"
+            // ],
+// python cutie/eval_vos.py dataset=[dataset] weights=[path to model file] model=[small/base]
+            "env": {
+                // "CUDA_VISIBLE_DEVICES": "6",
+                "PYTHONPATH": "$PYTHONPATH:../",
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "convert_burst",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "scripts/convert_burst_to_vos_train.py",
+            "args": [
+                "--json_path", "/ssd1/gaomingqi/datasets/svos/BURST/train/train.json",
+                "--frames_path", "/ssd1/gaomingqi/datasets/svos/BURST/frames/train",
+                "--output_path", "/ssd1/gaomingqi/datasets/svos/BURST/train-vos",
+            ],
+            "console": "integratedTerminal"
+        },
+    ]
+}
